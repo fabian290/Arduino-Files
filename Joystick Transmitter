@@ -1,0 +1,70 @@
+#include <SPI.h>
+#include <nRF24L01.h>
+#include <RF24.h>                                                                                    
+
+
+#define FORWARD 16736929
+#define BACKWARD 16754778
+#define LEFT    16720609
+#define RIGHT   16761407
+#define STOP    16712449  
+
+ 
+RF24 radio(7, 8); // CE, CSN
+//connection between NRF24L1
+const byte address[6] = "00001";
+
+  // put your setup code here, to run once:
+
+
+ int X_pin = A3; // analog pin connected to X output
+ int Y_pin = A5; // analog pin connected to Y output
+
+void setup() {
+  Serial.begin(9600);
+  radio.begin();
+radio.setChannel(12);
+  radio.openWritingPipe(address);
+  //
+  //power amplifier level and also the MIN means that we are using the 3v3  
+  radio.setPALevel(RF24_PA_MIN);
+
+  radio.stopListening();
+}
+void loop() {
+  int x_read = analogRead(X_pin);
+  int y_read = analogRead(Y_pin);
+  long sig = STOP;
+  Serial.print(String(x_read) + ",");
+  Serial.print(String(y_read));
+
+  if (x_read >= 900) {
+//    sig = RIGHT;
+    radio.write("right", 8);
+
+//    Serial.println("right");
+  } else if (x_read <= 200) {
+
+//   sig = LEFT;      
+   radio.write("left", 7);
+   
+  } else if (y_read <= 3) {
+    
+    radio.write("forward", 9);
+
+  } else if (y_read >= 900) {
+
+    radio.write("backward", 9);
+    
+  } else {
+
+
+    radio.write("stop", 5);
+  }
+
+ 
+Serial.println();
+    delay(20);
+  
+}
+  
